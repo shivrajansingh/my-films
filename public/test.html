@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Merger</title>
+</head>
+
+<body>
+    <script>
+        function mergeImages(imageSources, width = 490, height = 720) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const context = canvas.getContext('2d');
+
+                loadImages(imageSources)
+                    .then(images => {
+                        const segmentWidth = canvas.width / images.length;
+
+                        images.forEach((img, index) => {
+                            const sx = img.width * (index / images.length);
+                            const sy = 0;
+                            const sWidth = img.width / images.length;
+                            const sHeight = img.height;
+                            const dx = segmentWidth * index;
+                            const dy = 0;
+                            const dWidth = segmentWidth;
+                            const dHeight = canvas.height;
+
+                            context.drawImage(img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+                        });
+
+                        resolve(canvas.toDataURL('image/png'));
+                    })
+                    .catch(reject);
+            });
+        }
+
+        function loadImages(sources) {
+            return Promise.all(
+                sources.map(src => {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous"; // This will be needed if images are from different origin
+                        img.onload = () => resolve(img);
+                        img.onerror = reject;
+                        img.src = src;
+                    });
+                })
+            );
+        }
+
+        const imageSources = [
+  "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
+  "https://m.media-amazon.com/images/M/MV5BYWVhZjZkYTItOGIwYS00NmRkLWJlYjctMWM0ZjFmMDU4ZjEzXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
+  "https://m.media-amazon.com/images/M/MV5BZGI4NTEwNTAtZDcwMi00MDkxLTg1OGYtNTZmMzE3ZDljNzVlXkEyXkFqcGdeQXVyMTEyMjM2NDc2._V1_SX300.jpg"
+];
+        // [
+        //     './assets/images/image1.jpg',
+        //     './assets/images/image2.jpg',
+        //     './assets/images/image3.jpg',
+        //     './assets/images/image4.jpg',
+        //     './assets/images/image5.jpg'
+        // ];
+
+        mergeImages(imageSources).then(newImageUrl => {
+            console.log(newImageUrl); // This is the new image URL
+            // Optionally, display the new image
+            const resultImg = document.createElement('img');
+            resultImg.src = newImageUrl;
+            document.body.appendChild(resultImg);
+        }).catch(error => {
+            console.error('Error merging images:', error);
+        });
+
+
+    </script>
+</body>
+
+</html>
